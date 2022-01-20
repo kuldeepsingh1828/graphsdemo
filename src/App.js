@@ -19,9 +19,10 @@ import Tooltip from '@mui/material/Tooltip';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { visuallyHidden } from '@mui/utils';
-
+import UpdateDialog from './Edit';
 function createData(id, name, calories, fat, carbs, protein) {
   return {
     id,
@@ -180,6 +181,20 @@ export default function EnhancedTable() {
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [deleteIndex, setDeleteIndex] = React.useState([]);
+  const [editIndex, setEditIndex] = React.useState({});
+  const [open, setOpen] = React.useState(false);
+
+  const handleClickOpen = () => {
+    console.log(editIndex)
+    setOpen(true);
+  };
+
+  const handleClose = (action) => {
+    console.log(action);
+    setOpen(false);
+    setSelected([]);
+  };
+
 
   const handleDelete = () => {
     const newrows = rows.filter((row, index) => {
@@ -190,6 +205,10 @@ export default function EnhancedTable() {
     setRows(newrows);
     setDeleteIndex([]);
     setSelected([]);
+  }
+  const handleEdit = () => {
+
+    handleClickOpen();
   }
   const EnhancedTableToolbar = (props) => {
     const { numSelected } = props;
@@ -226,11 +245,20 @@ export default function EnhancedTable() {
         )}
 
         {numSelected > 0 ? (
-          <Tooltip title="Delete">
-            <IconButton onClick={handleDelete}>
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
+          <>
+            {numSelected == 1 &&
+              <Tooltip title="Edit">
+                <IconButton onClick={handleEdit}>
+                  <EditIcon />
+                </IconButton>
+              </Tooltip>}
+
+            <Tooltip title="Delete">
+              <IconButton onClick={handleDelete}>
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
+          </>
         ) : (
           <Tooltip title="Filter list">
             <IconButton>
@@ -260,7 +288,9 @@ export default function EnhancedTable() {
 
   const handleClick = (event, name) => {
     if (event.target.checked) {
-      deleteIndex.push(parseInt(event.target.dataset.index))
+      let curindex = event.target.dataset.index
+      setEditIndex(rows[curindex])
+      deleteIndex.push(parseInt(curindex))
       setDeleteIndex([...new Set(deleteIndex)])
     }
     const selectedIndex = selected.indexOf(name);
@@ -390,6 +420,7 @@ export default function EnhancedTable() {
         control={<Switch checked={dense} onChange={handleChangeDense} />}
         label="Dense padding"
       />
+      <UpdateDialog row={editIndex} handleClickOpen={handleClickOpen} handleClose={handleClose} open={open} />
     </Box>
   );
 }
